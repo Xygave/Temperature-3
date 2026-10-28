@@ -1,0 +1,152 @@
+# Temperature 1.2.0 — настройки выживания, все времена в секундах.
+# После редактирования: /temperature reload
+# Если переходите с 1.1.0, сохраните старый config.yml и создайте новый.
+# Настройки температуры биомов сохранены из версии 1.1.0.
+plugin-enabled: true
+
+display:
+  duration-seconds: 5              # Сколько секунд показывать температуру биома
+  reminder-seconds: 300            # Интервал повторного показа температуры
+  show-on-join: true
+  show-on-biome-change: true
+  warning-interval-seconds: 15     # Общее чередование предупреждений: каждые 15 секунд
+  cold-warning:
+    enabled: true
+    duration-seconds: 3
+    text: "&bВы начинаете замерзать! &f{biome_temp}°C"
+  critical-warning:
+    enabled: true
+    duration-seconds: 3
+    text: "&cКритическое переохлаждение! &f{body_temp}°C"
+  # Переменные: {body_temp}, {biome_temp}, {effective_temp}, {biome}
+
+body:
+  normal-temperature: 36.6        # Температура тела нового/возрождённого игрока
+  minimum-temperature: 25.0       # Нижний предел числовой модели
+  comfortable-air-min: 15.0       # Ниже этой температуры начинается охлаждение
+  comfortable-air-max: 33.0       # Верх комфортного диапазона (для информации)
+
+cooling:
+  enabled: true
+  # nonlinear — нелинейная модель (рекомендуется); linear — линейная.
+  model: nonlinear
+  # Эталон: сухой игрок без брони при -45°C достигнет Slowness I за 60 секунд.
+  reference-temperature: -45.0
+  reference-slowness-seconds: 60
+  # 0.5 — мягкий мороз заметнее; 1.0 — линейная зависимость.
+  # Чем меньше степень, тем сильнее воздействие небольшого холода.
+  exponent: 0.5
+  # Формула: скорость = ((36.6 - порог Slowness I) / 60)
+  #   * ((15 - эффективная температура) / (15 - (-45))) ^ exponent
+  # При -45°C: рамка ~27с, Slowness I 60с, урон ~77с.
+  # При +14°C: Slowness I ~7 мин 45 сек; при -20°C: ~1 мин 19 сек.
+  max-rate: 0.20                  # Максимальная потеря °C/с ДО множителя влажности
+
+warming:
+  normal-rate: 0.035              # °C/с в комфортной среде
+  heat-source-rate: 0.143333333   # °C/с рядом с источником, когда стало комфортно
+
+wetness:
+  enabled: true
+  duration-seconds: 60            # После выхода из воды
+  cooling-multiplier: 1.5         # Мокрый игрок теряет тепло на 50% быстрее
+
+heat-sources:
+  # warmth — прибавка к эффективной температуре, не к температуре тела.
+  # Несколько источников не складываются: используется самый сильный.
+  torch:
+    radius: 2
+    warmth: 4.0
+  campfire:
+    radius: 5
+    warmth: 16.0
+  fire:
+    radius: 3
+    warmth: 12.0
+  lava:
+    radius: 4
+    warmth: 25.0
+
+stew:
+  enabled: true
+  warmth: 0.8                    # Всего °C телу за время warming-seconds
+  warming-seconds: 20
+  cooling-reduction: 0.40        # 0.40 = на 40% меньше охлаждение
+  protection-seconds: 30
+  cooldown-seconds: 60           # Повторное рагу не суммирует согревание
+
+cold-effects:
+  frost-threshold: 35.0
+  frost-screen-strength: 0.75
+  slowness-1-threshold: 33.0
+  slowness-1-level: 1
+  damage-threshold: 32.0
+  slowness-2-threshold: 30.0
+  slowness-2-level: 2
+  critical-threshold: 28.0
+  damage-amount: 1.0             # 2 единицы = одно сердце
+  damage-every-seconds: 5
+  critical-damage-multiplier: 2.0
+  critical-frequency-multiplier: 2.0
+  weakness:
+    enabled: false                # Можно включить слабость при критическом холоде
+    threshold: 28.0
+    level: 1
+
+underground:
+  enabled: true
+  safe-y: -30                    # В обычном мире на Y<=-30 холод не действует
+  warming-rate: 0.035            # °C/с восстановление на глубине
+
+worldguard:
+  enabled: true                  # Флаг /rg flag spawn temperature-effects deny
+
+performance:
+  source-scan-seconds: 2         # Проверка источников тепла раз в N секунд
+
+heat:
+  # В Аду замедление I начинается через 60 секунд
+  nether-delay-seconds: 60
+  # В пустынных биомах днем — через 180 секунд
+  desert-delay-seconds: 180
+  # Рядом с огнем и лавой в обычном мире — через 180 секунд
+  source-delay-seconds: 180
+  # Радиус огня/лавы, вызывающих жару в обычном мире
+  source-radius: 3
+  # Сколько секунд защищает питье воды/любого зелья
+  drink-immunity-seconds: 180
+  # Сколько секунд защищает купание после выхода из воды
+  bathing-immunity-seconds: 30
+  # Обычный костер НЕ вызывает жару. Факел тоже.
+
+biomes:
+  # Формат: ИМЯ_БИОМА: {day: температура_днем, night: температура_ночью, type: cold/hot/normal}
+  # Можно добавлять биомы по их названиям из Minecraft.
+  # Холод: все указанные ниже биомы; для них действуют общие таймеры cold.
+  SNOWY_TAIGA: {day: -20, night: -30, type: cold}
+  SNOWY_PLAINS: {day: -18, night: -28, type: cold}
+  ICE_SPIKES: {day: -30, night: -40, type: cold}
+  SNOWY_SLOPES: {day: -22, night: -32, type: cold}
+  FROZEN_PEAKS: {day: -35, night: -45, type: cold}
+  JAGGED_PEAKS: {day: -25, night: -35, type: cold}
+  GROVE: {day: -12, night: -22, type: cold}
+  FROZEN_RIVER: {day: -14, night: -24, type: cold}
+  FROZEN_OCEAN: {day: -20, night: -30, type: cold}
+  DEEP_FROZEN_OCEAN: {day: -22, night: -32, type: cold}
+  SNOWY_BEACH: {day: -10, night: -20, type: cold}
+  # Жара в пустынях — только днем.
+  DESERT: {day: 42, night: 18, type: hot}
+  BADLANDS: {day: 40, night: 17, type: hot}
+  ERODED_BADLANDS: {day: 40, night: 17, type: hot}
+  WOODED_BADLANDS: {day: 36, night: 16, type: hot}
+  # Другие биомы используют общие значения ниже.
+  default-day-temperature: 22
+  default-night-temperature: 12
+  nether-temperature: 55
+  end-temperature: 15
+
+armor:
+  leather-degrees-per-piece: 12
+  diamond-degrees-per-piece: 2
+  netherite-degrees-per-piece: 4
+

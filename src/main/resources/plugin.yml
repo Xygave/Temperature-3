@@ -1,0 +1,14 @@
+name: Temperature
+version: 1.2.0
+main: dev.xygave.temperature.TemperaturePlugin
+api-version: '1.21.11'
+softdepend: [WorldGuard]
+description: Lightweight biome cold and heat survival system
+commands:
+  temperature:
+    description: Current temperature or administrative controls
+    usage: /temperature [on|off|reload]
+permissions:
+  temperature.admin:
+    description: Allows on/off/reload
+    default: op
